@@ -1,8 +1,8 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
-setup(name='yolov3_tf2',
+setup(name='yolo3_tf2_ros',
       version='0.1',
-      url='https://github.com/zzh8829/yolov3-tf2',
-      author='Zihao Zhang',
-      author_email='zzh8829@gmail.com',
-      packages=['yolov3_tf2'])
+      url='https://github.com/ortslil64/yolo3-tf2-ros',
+      author='Or Tslil forked from (Zihao Zhang)',
+      author_email='ortslil64@gmail.com',
+      packages=find_packages())

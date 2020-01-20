@@ -198,7 +198,7 @@ def yolo_nms(outputs, anchors, masks, classes):
         score_threshold=0.5
     )
 
-    return boxes, scores, classes, valid_detections
+    return boxes, scores, classes, valid_detections, class_probs
 
 
 def YoloV3(size=None, channels=3, anchors=yolo_anchors,

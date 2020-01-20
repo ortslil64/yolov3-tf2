@@ -35,12 +35,10 @@ def img_callback (ros_img):
     except CvBridgeError as e:
         print (e)
 
-print('Initi')
 rospy.init_node('ssd_node', anonymous = True)
 bridge = CvBridge()
 img_sub = rospy.Subscriber('/camera/image_raw', Image, img_callback)
 cv_img = rospy.wait_for_message('/camera/image_raw',Image)
-print('Initi')
 
 rospack = rospkg.RosPack()
 pa = rospack.get_path('yolo3_tf2_ros')
@@ -66,7 +64,7 @@ if __name__ == '__main__':
     class_names = [c.strip() for c in open(pa+'/data/coco.names').readlines()]
     print('classes loaded')
     
-
+    
     while not rospy.is_shutdown():
         L_output = SSD_Outputs()
         flag = 0
@@ -75,9 +73,28 @@ if __name__ == '__main__':
         img = transform_images(img, 416)
         height = img.shape[0]
         width = img.shape[1]
-        boxes, scores, classes, nums = yolo(img)
+        boxes, scores, classes, nums, probabilities = yolo(img)
+        np_boxes = boxes.numpy()
+        for i in range(nums):
+            output = SSD_Output()
+            ymin = np.int32(np_boxes[0][i][0] * height)
+            xmin = np.int32(np_boxes[0][i][1] * width)
+            ymax = np.int32(np_boxes[0][i][2] * height)
+            xmax = np.int32(np_boxes[0][i][3] * width)
+            output.x_min = int(xmin)
+            output.x_max = int(xmax)
+            output.y_min = int(ymin)
+            output.y_max = int(ymax)
+            output.height_factor = (ymax-ymin)/(xmax-xmin)
+            output.cls = np.array(classes[0][i]).astype(np.int32)
+            output.height_factor = (ymax-ymin)/(xmax-xmin)
 
+            for p in probabilities[0][i]:
+                output.probability_distribution.append(p)
 
+            L_output.outputs.append(output)
+
+        Im_outs_Pub.publish(L_output)
         img = draw_outputs(img_raw, (boxes, scores, classes, nums), class_names)
         msg_frame = bridge.cv2_to_imgmsg(img)
         msg_frame.encoding = 'bgr8'
